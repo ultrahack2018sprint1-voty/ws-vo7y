@@ -31,14 +31,14 @@ wss.on('connection', function connection(ws) {
     console.log('Incoming data: ' + data);
     const parsed = JSON.parse(data);
 
-    if(parsed.mutation == CREATE_QUESTION_EVENT) {
+    if(parsed.event_type == CREATE_QUESTION_EVENT) {
       handleCreateQuestionEvent(parsed, wss, ws);
     }
-    else if(parsed.mutation == ANSWER_EVENT) {
+    else if(parsed.event_type == ANSWER_EVENT) {
       handleAnswerEvent(parsed, wss, ws);
     }
     else {
-      ws.send(JSON.stringify({"error": "Unknown mutation: " + parsed.mutation}))
+      ws.send(JSON.stringify({"error": "Unknown event_type: " + parsed.event_type}))
     }
   });
 
