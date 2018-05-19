@@ -22,11 +22,33 @@ wss.broadcast = function broadcast(data) {
   });
 };
 
-wss.on('connection', function connection(ws) {
-  ws.on('message', function incoming(data) {
-    console.log('Incoming data: ' + data)
+// WS EVENTS
+const CREATE_QUESTION_EVENT = "CREATE_QUESTION"
+const ANSWER_EVENT = "ANSWER"
 
-    const parsed = JSON.parse(data)
+wss.on('connection', function connection(ws) {
+
+  ws.on('message', function incoming(data) {
+    console.log('Incoming data: ' + data);
+    const parsed = JSON.parse(data);
+
+    if(parsed.event_type == CREATE_QUESTION_EVENT) {
+      handleCreateQuestionEvent(parsed, wss, ws);
+    }
+    else if(parsed.event_type == ANSWER_EVENT) {
+      console.log("Not implemened yet");
+    }
+    else {
+      ws.send("Unknown event_type: " + parsed.event_type)
+    }
+  });
+
+  ws.on('close', () => console.log('Client disconnected'));
+});
+
+
+function handleCreateQuestionEvent(parsed, wss, ws) {
+
     const question_duration_sec = parsed.question.duration * 1000
     const payload = {
       "partner_title" : parsed.partner_title,
@@ -63,10 +85,7 @@ wss.on('connection', function connection(ws) {
 
       ws.send(body)
     }, question_duration_sec);
-  });
-
-  ws.on('close', () => console.log('Client disconnected'));
-});
+}
 
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
