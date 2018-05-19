@@ -27,7 +27,7 @@ wss.on('connection', function connection(ws) {
     console.log('Incoming data: ' + data)
 
     const parsed = JSON.parse(data)
-    const question_duration_sec = parsed.question.duration
+    const question_duration_sec = parsed.question.duration * 1000
     const payload = {
       "partner_title" : parsed.partner_title,
       "id"            : parsed.id,
@@ -42,13 +42,35 @@ wss.on('connection', function connection(ws) {
     // Broadcast to everyone else.
     wss.clients.forEach(function each(client) {
       if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(JSON.stringify(body));
+        client.send(body);
       }
     });
+
+    setTimeout(() => {
+      const payload = {
+        "winner_access_code" : "vo7y",
+        "question"           : parsed.question.title,
+        "statistics"         : parsed.question.options.map(q =>
+          ({
+            "option"         : q.body,
+            "correct"        : q.correct,
+            "responses_count": getRandomInt(1, 400)
+          })
+        )
+      }
+      const body = JSON.stringify(payload)
+      console.log('Statistics: ' + body)
+
+      ws.send(body)
+    }, question_duration_sec);
   });
 
   ws.on('close', () => console.log('Client disconnected'));
 });
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 setInterval(() => {
   wss.clients.forEach((client) => {
