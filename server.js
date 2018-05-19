@@ -69,7 +69,7 @@ function handleCreateQuestionEvent(parsed, wss, ws) {
 
   setTimeout(() => {
     const payload = {
-      "mutation"         : "WINNER_SELECTION",
+      "mutation"           : "WINNER_SELECTION",
       "winner_access_code" : "vo7y",
       "question"           : parsed.question.title,
       "statistics"         : parsed.question.options.map(q =>
@@ -83,7 +83,12 @@ function handleCreateQuestionEvent(parsed, wss, ws) {
     const body = JSON.stringify(payload)
     console.log('Statistics: ' + body)
 
-    wss.broadcast(body)
+    // wss.broadcast(body)
+    wss.clients.forEach(function each(client) {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(body);
+      }
+    });
 
   }, parsed.question.duration * 1000);
 }
