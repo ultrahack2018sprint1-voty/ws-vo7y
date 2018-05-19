@@ -1,26 +1,17 @@
 'use strict';
 
-const express = require('express');
+const express   = require('express');
 const WebSocket = require('ws');
-const path = require('path');
+const path      = require('path');
 
-const PORT = process.env.PORT || 3000;
+const PORT  = process.env.PORT || 3000;
 const INDEX = path.join(__dirname, 'index.html');
 
 const server = express()
-  .use((req, res) => res.sendFile(INDEX) )
+  .use((req, res)  => res.sendFile(INDEX) )
   .listen(PORT, () => console.log(`Listening on ${ PORT }`));
 
 const wss = new WebSocket.Server({ server });
-
-// Broadcast to all.
-wss.broadcast = function broadcast(data) {
-  wss.clients.forEach(function each(client) {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(data);
-    }
-  });
-};
 
 // WS EVENTS
 const CREATE_QUESTION_EVENT = "CREATE_QUESTION"
@@ -36,7 +27,7 @@ wss.on('connection', function connection(ws) {
       handleCreateQuestionEvent(parsed, wss, ws);
     }
     else if(parsed.event_type == ANSWER_EVENT) {
-      console.log("Not implemened yet");
+      handleAnswerEvent(parsed, wss, ws);
     }
     else {
       ws.send("Unknown event_type: " + parsed.event_type)
@@ -46,45 +37,46 @@ wss.on('connection', function connection(ws) {
   ws.on('close', () => console.log('Client disconnected'));
 });
 
+function handleAnswerEvent(parsed, wss, ws) {
+
+}
 
 function handleCreateQuestionEvent(parsed, wss, ws) {
+  const payload = {
+    "partner_title" : parsed.partner_title,
+    "id"            : parsed.id,
+    "question"      : {
+      "title"   : parsed.question.title,
+      "options" : parsed.question.options.map(q => q.body)
+    }
+  }
+  const body = JSON.stringify(payload)
+  console.log('Payload: ' + body)
 
-    const question_duration_sec = parsed.question.duration * 1000
+  // Broadcast to everyone else.
+  wss.clients.forEach(function each(client) {
+    if (client !== ws && client.readyState === WebSocket.OPEN) {
+      client.send(body);
+    }
+  });
+
+  setTimeout(() => {
     const payload = {
-      "partner_title" : parsed.partner_title,
-      "id"            : parsed.id,
-      "question"      : {
-        "title"   : parsed.question.title,
-        "options" : parsed.question.options.map(q => q.body)
-      }
+      "winner_access_code" : "vo7y",
+      "question"           : parsed.question.title,
+      "statistics"         : parsed.question.options.map(q =>
+        ({
+          "option"         : q.body,
+          "correct"        : q.correct,
+          "responses_count": getRandomInt(200, 400)
+        })
+      )
     }
     const body = JSON.stringify(payload)
-    console.log('Payload: ' + body)
+    console.log('Statistics: ' + body)
 
-    // Broadcast to everyone else.
-    wss.clients.forEach(function each(client) {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(body);
-      }
-    });
-
-    setTimeout(() => {
-      const payload = {
-        "winner_access_code" : "vo7y",
-        "question"           : parsed.question.title,
-        "statistics"         : parsed.question.options.map(q =>
-          ({
-            "option"         : q.body,
-            "correct"        : q.correct,
-            "responses_count": getRandomInt(200, 400)
-          })
-        )
-      }
-      const body = JSON.stringify(payload)
-      console.log('Statistics: ' + body)
-
-      ws.send(body)
-    }, question_duration_sec);
+    ws.send(body)
+  }, parsed.question.duration * 1000);
 }
 
 function getRandomInt(min, max) {
