@@ -54,7 +54,7 @@ wss.on('connection', function connection(ws) {
           ({
             "option"         : q.body,
             "correct"        : q.correct,
-            "responses_count": getRandomInt(1, 400)
+            "responses_count": getRandomInt(200, 400)
           })
         )
       }
