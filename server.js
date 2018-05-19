@@ -51,6 +51,7 @@ function handleAnswerEvent(parsed, wss, ws) {
 
 function handleCreateQuestionEvent(parsed, wss, ws) {
   const payload = {
+    "mutation"      : "QUESTION",
     "partner_title" : parsed.partner_title,
     "question"      : {
       "title"   : parsed.question.title,
