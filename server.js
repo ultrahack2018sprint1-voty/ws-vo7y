@@ -31,14 +31,14 @@ wss.on('connection', function connection(ws) {
     console.log('Incoming data: ' + data);
     const parsed = JSON.parse(data);
 
-    if(parsed.event_type == CREATE_QUESTION_EVENT) {
+    if(parsed.mutation == CREATE_QUESTION_EVENT) {
       handleCreateQuestionEvent(parsed, wss, ws);
     }
-    else if(parsed.event_type == ANSWER_EVENT) {
+    else if(parsed.mutation == ANSWER_EVENT) {
       handleAnswerEvent(parsed, wss, ws);
     }
     else {
-      ws.send(JSON.stringify({"error": "Unknown event_type: " + parsed.event_type}))
+      ws.send(JSON.stringify({"error": "Unknown mutation: " + parsed.mutation}))
     }
   });
 
@@ -69,7 +69,7 @@ function handleCreateQuestionEvent(parsed, wss, ws) {
 
   setTimeout(() => {
     const payload = {
-      "event_type"         : "WINNER_SELECTION",
+      "mutation"         : "WINNER_SELECTION",
       "winner_access_code" : "vo7y",
       "question"           : parsed.question.title,
       "statistics"         : parsed.question.options.map(q =>
