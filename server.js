@@ -15,7 +15,7 @@ const wss = new WebSocket.Server({ server });
 
 // WS EVENTS
 const CREATE_QUESTION_EVENT = "CREATE_QUESTION"
-const ANSWER_EVENT = "ANSWER"
+const ANSWER_EVENT          = "ANSWER"
 
 wss.on('connection', function connection(ws) {
 
@@ -38,7 +38,7 @@ wss.on('connection', function connection(ws) {
 });
 
 function handleAnswerEvent(parsed, wss, ws) {
-
+  console.log("Got answer " + JSON.stringify(parsed));
 }
 
 function handleCreateQuestionEvent(parsed, wss, ws) {
@@ -82,4 +82,3 @@ function handleCreateQuestionEvent(parsed, wss, ws) {
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
