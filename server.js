@@ -17,6 +17,14 @@ const wss = new WebSocket.Server({ server });
 const CREATE_QUESTION_EVENT = "CREATE_QUESTION"
 const ANSWER_EVENT          = "ANSWER"
 
+wss.broadcast = function broadcast(data) {
+  wss.clients.forEach(function each(client) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(data);
+    }
+  });
+};
+
 wss.on('connection', function connection(ws) {
 
   ws.on('message', function incoming(data) {
@@ -62,6 +70,7 @@ function handleCreateQuestionEvent(parsed, wss, ws) {
 
   setTimeout(() => {
     const payload = {
+      "event_type"         : "WINNER_SELECTION",
       "winner_access_code" : "vo7y",
       "question"           : parsed.question.title,
       "statistics"         : parsed.question.options.map(q =>
@@ -75,7 +84,8 @@ function handleCreateQuestionEvent(parsed, wss, ws) {
     const body = JSON.stringify(payload)
     console.log('Statistics: ' + body)
 
-    ws.send(body)
+    wss.broadcast(body)
+
   }, parsed.question.duration * 1000);
 }
 
