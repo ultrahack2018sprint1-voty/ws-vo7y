@@ -52,7 +52,6 @@ function handleAnswerEvent(parsed, wss, ws) {
 function handleCreateQuestionEvent(parsed, wss, ws) {
   const payload = {
     "partner_title" : parsed.partner_title,
-    "id"            : parsed.id,
     "question"      : {
       "title"   : parsed.question.title,
       "options" : parsed.question.options.map(q => q.body)
