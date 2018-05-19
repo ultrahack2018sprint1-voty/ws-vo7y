@@ -30,7 +30,7 @@ wss.on('connection', function connection(ws) {
       handleAnswerEvent(parsed, wss, ws);
     }
     else {
-      ws.send("Unknown event_type: " + parsed.event_type)
+      ws.send(JSON.stringify({"error": "Unknown event_type: " + parsed.event_type}))
     }
   });
 
